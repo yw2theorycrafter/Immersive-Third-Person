@@ -6,7 +6,7 @@ namespace com.yw2theorycrafter.thirdpersonview {
         [HarmonyPrefix]
         public static bool Prefix(Player __instance) {
             var comp = __instance.GetComponentInChildren<ThirdPersonCameraControl>();
-            return comp is null;
+            return comp == null;
         }
     }
 

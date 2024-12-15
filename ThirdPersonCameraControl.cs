@@ -1,7 +1,7 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace com.yw2theorycrafter.thirdpersonview {
+namespace com.yw2theorycrafter.thirdpersonview
+{
     class ThirdPersonCameraControl : MonoBehaviour {
 
         public static ThirdPersonCameraControl main = null;
@@ -101,7 +101,7 @@ namespace com.yw2theorycrafter.thirdpersonview {
                 return;
             }
 
-            if (main is null) {
+            if (main == null) {
                 SetupSingleton(mainControl);
             }
 
