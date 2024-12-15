@@ -6,6 +6,7 @@ namespace com.yw2theorycrafter.thirdpersonview {
         [HarmonyPostfix]
         public static void Postfix(MainCameraControl __instance) {
             __instance.gameObject.AddComponent<ThirdPersonCameraControl>();
+            __instance.enabled = false;
         }
     }
 
