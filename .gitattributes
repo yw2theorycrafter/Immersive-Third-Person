@@ -1,0 +1,6 @@
+.gitignore text eol=crlf
+.gitattributes text eol=crlf
+*.cs text eol=crlf
+*.csproj text eol=crlf
+*.sln text eol=crlf
+*.json text eol=crlf
