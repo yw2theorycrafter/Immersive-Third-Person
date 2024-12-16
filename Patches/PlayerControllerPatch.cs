@@ -3,12 +3,18 @@
 namespace com.yw2theorycrafter.thirdpersonview {
     [HarmonyPatch(typeof(Player), nameof(Player.SetHeadVisible))]
     class PlayerController_SetHeadVisiblePatch {
-        public static bool Prefix(Player __instance) {
-            if (ThirdPersonCameraControl.main.enabled) {
+        public static bool Prefix(Player __instance)
+        {
+            var thirdPersonControl = ThirdPersonCameraControl.main;
+            var ret = true;
+            if (thirdPersonControl && thirdPersonControl.enabled) {
                 __instance.head.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
-                return false;
+                ret = false;
             }
-            return true;
+#if DEBUG
+            Plugin.Logger.LogInfo($"SetHeadVisible {ret}");
+#endif
+            return ret;
         }
     }
     [HarmonyPatch(typeof(Player), nameof(Player.Start))]
