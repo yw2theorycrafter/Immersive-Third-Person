@@ -141,8 +141,8 @@ namespace com.yw2theorycrafter.thirdpersonview
             Vector3 lookDirection = lookRotation * Vector3.forward;
 
             if (_inVehicle) {
-                if (Player.main.IsInSub()) lookPosition = focusPoint - lookDirection * SmoothMoveToDistance(config.cyclopsDistance);
-                else lookPosition = focusPoint - lookDirection * SmoothMoveToDistance(config.vehicleDistance);
+                if (Player.main.IsInSub()) lookPosition = -1 * Vector3.forward * SmoothMoveToDistance(config.cyclopsDistance);
+                else lookPosition = -1 * Vector3.forward * SmoothMoveToDistance(config.vehicleDistance);
             } else {
                 lookPosition = focusPoint - lookDirection * config.swimDistance;
 
