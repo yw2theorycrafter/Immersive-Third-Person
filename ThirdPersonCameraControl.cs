@@ -21,7 +21,10 @@ namespace com.yw2theorycrafter.thirdpersonview
 
         private ThirdPersonViewConfig config;
 
-        private const int obstructionMask = -2097153;
+        //Camera ignores player and all default collision masks
+        //Also layer 0, had some weird collisions on that layer
+        //Also layer 21 - TODO why?
+        private int obstructionMask = (~(1 << 0)) & (~(1 << 21)) & (~(1 << LayerID.Player)) & LayerID.DefaultCollisionMask;
         private Vector3 pdaOffset;
         private Vector3 cameraHalfExtends;
 
@@ -189,19 +192,24 @@ namespace com.yw2theorycrafter.thirdpersonview
 
                 Vector3 rectOffset = lookDirection * Camera.main.nearClipPlane;
                 Vector3 rectPosition = lookPosition + rectOffset;
-                Vector3 castFrom = focusTransform.position;
+                Vector3 castFrom = focusPoint;
                 Vector3 castLine = rectPosition - castFrom;
                 float castDistance = castLine.magnitude;
                 Vector3 castDirection = castLine / castDistance;
 
                 if (Physics.BoxCast(castFrom, cameraHalfExtends, castDirection, out var hit, lookRotation, castDistance, obstructionMask)) {
-                    rectPosition = castFrom + castDirection * SmoothMoveToDistance(hit.distance);
+#if DEBUG
+                    Plugin.Logger.LogInfo($"Hit! {hit.collider} layer={hit.collider.gameObject.layer}");
+#endif
+                    currentDistance = hit.distance;
+                    rectPosition = castFrom + castDirection * currentDistance;
                     lookPosition = rectPosition - rectOffset;
                 } else {
                     lookPosition = focusPoint - lookDirection * SmoothMoveToDistance(config.swimDistance);
                 }
             }
 
+            //When this is not called, the camera does not move at all.
             cameraTransform.SetPositionAndRotation(lookPosition, lookRotation);
             if (!CinematicMode) {
                 UpdateViewModel();
@@ -226,7 +234,11 @@ namespace com.yw2theorycrafter.thirdpersonview
 
         private void UpdateFocusPoint() {
             focusPointLastFrame = focusPoint;
-            
+
+            //XXX
+            focusPoint = focusTransform.position;
+
+            /*
             Vector3 targetPoint = focusTransform.position;
             if (pilotingCyclops) {
                 targetPoint -= focusTransform.forward * 1;
@@ -245,6 +257,7 @@ namespace com.yw2theorycrafter.thirdpersonview
             } else {
                 focusPoint = targetPoint;
             }
+            */
         }
 
         private bool ManualRotation() {
@@ -303,7 +316,9 @@ namespace com.yw2theorycrafter.thirdpersonview
             }
         }
 
-        private void ConstrainAngles() {
+        private void ConstrainAngles()
+        {
+            //This is not causing jerks.
 
             if (pilotingCyclops) {
                 rotationX = Mathf.Clamp(rotationX % 360, -60, 60);
