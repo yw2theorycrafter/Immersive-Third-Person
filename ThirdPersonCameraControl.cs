@@ -8,7 +8,6 @@ namespace com.yw2theorycrafter.thirdpersonview
 
         private Transform focusTransform;
         private Transform cameraTransform;
-        private Transform previousCameraParent;
         private Transform viewModelTransform;
         private Transform playerTransform;
 
@@ -110,9 +109,6 @@ namespace com.yw2theorycrafter.thirdpersonview
 
             if (Player.main != null)
                 Player.main.SetHeadVisible(true);
-            previousCameraParent = cameraTransform.parent;
-            cameraTransform.SetParent(null, true);
-            cameraTransform.localRotation = Quaternion.Euler(rotationX, rotationY, 0);
         }
 
         private void OnDisable() {
@@ -124,10 +120,6 @@ namespace com.yw2theorycrafter.thirdpersonview
 
             if (Player.main != null)
                 Player.main.SetHeadVisible(false);
-            if (cameraTransform != null) {
-                cameraTransform.SetParent(main.previousCameraParent, true);
-                cameraTransform.localPosition = Vector3.forward * -0.1f;
-            }
         }
 
         private void SetupSingleton(MainCameraControl mainControl) {
@@ -179,7 +171,7 @@ namespace com.yw2theorycrafter.thirdpersonview
                 ConstrainAngles();
                 lookRotation = Quaternion.Euler(rotationX, rotationY, 0);
             } else {
-                lookRotation = cameraTransform.localRotation;
+                lookRotation = Quaternion.Euler(rotationX, rotationY, 0);
             }
 
             Vector3 lookDirection = lookRotation * Vector3.forward;
@@ -202,15 +194,14 @@ namespace com.yw2theorycrafter.thirdpersonview
                     Plugin.Logger.LogInfo($"Hit! {hit.collider} layer={hit.collider.gameObject.layer}");
 #endif
                     currentDistance = hit.distance;
-                    rectPosition = castFrom + castDirection * currentDistance;
-                    lookPosition = rectPosition - rectOffset;
+                    lookPosition = -1 * Vector3.forward * currentDistance;
                 } else {
-                    lookPosition = focusPoint - lookDirection * SmoothMoveToDistance(config.swimDistance);
+                    lookPosition = -1 * Vector3.forward * SmoothMoveToDistance(config.swimDistance);
                 }
             }
 
             //When this is not called, the camera does not move at all.
-            cameraTransform.SetPositionAndRotation(lookPosition, lookRotation);
+            cameraTransform.localPosition = lookPosition;
             if (!CinematicMode) {
                 UpdateViewModel();
             }
@@ -226,10 +217,9 @@ namespace com.yw2theorycrafter.thirdpersonview
             rotationX = 0;
             UpdateViewModel();
 
-            var lookPosition = Player.main.transform.position + focusTransform.TransformDirection(pdaOffset);
-            var lookRotation = playerTransform.rotation;
-
-            cameraTransform.SetPositionAndRotation(lookPosition, lookRotation);
+            cameraTransform.localPosition = Vector3.zero;
+            //var lookPosition = Player.main.transform.position + focusTransform.TransformDirection(pdaOffset);
+            //var lookRotation = playerTransform.rotation;
         }
 
         private void UpdateFocusPoint() {
