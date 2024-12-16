@@ -15,7 +15,6 @@ namespace com.yw2theorycrafter.thirdpersonview {
 #endif
                 thirdPersonControl = __instance.gameObject.AddComponent<ThirdPersonCameraControl>();
             }
-            __instance.enabled = false;
         }
     }
 
@@ -52,7 +51,7 @@ namespace com.yw2theorycrafter.thirdpersonview {
     class MainCameraControl_LookAtPatch {
         [HarmonyPostfix]
         public static bool Prefix(MainCameraControl __instance) {
-        var thirdPersonControl = ThirdPersonCameraControl.main;
+            var thirdPersonControl = ThirdPersonCameraControl.main;
             var ret = thirdPersonControl == null || !thirdPersonControl.enabled;
 #if DEBUG
             Plugin.Logger.LogInfo($"LookAt {ret}");

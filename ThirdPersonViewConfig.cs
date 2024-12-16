@@ -15,14 +15,6 @@ namespace com.yw2theorycrafter.thirdpersonview {
         //[Toggle("Switch to first person in bases/cyclops"), OnChange(nameof(OnFirstPersonInBaseChange))]
         public bool switchToFirstPersonWhenInside = true;
 
-        /* when above changed, call:
-        private void OnFirstPersonInBaseChange() {
-            if (ThirdPersonCameraControl.main != null) {
-                ThirdPersonCameraControl.main.RefreshTightSpaceStatus();
-            }
-        }
-        */
-
         //[Slider("Sensitivity (deg/s)", 1, 180, DefaultValue = 90)]
         public float rotationSpeed = 90;
 

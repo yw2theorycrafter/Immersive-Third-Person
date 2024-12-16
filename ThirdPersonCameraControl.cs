@@ -24,10 +24,7 @@ namespace com.yw2theorycrafter.thirdpersonview
         //Also layer 0, had some weird collisions on that layer
         //Also layer 21 - TODO why?
         private int obstructionMask = (~(1 << 0)) & (~(1 << 21)) & (~(1 << LayerID.Player)) & LayerID.DefaultCollisionMask;
-        private Vector3 pdaOffset;
         private Vector3 cameraHalfExtends;
-
-        public static bool cameraToPlayerManagerOverride;
 
         private bool _cinematicMode;
         public bool CinematicMode { get {
@@ -45,7 +42,7 @@ namespace com.yw2theorycrafter.thirdpersonview
                     Vector3 localEulerAngles = playerTransform.localEulerAngles;
                     localEulerAngles.x *= 2;
                     localEulerAngles.y = 0;
-                    GetComponentInParent<Player>().transform.localEulerAngles = localEulerAngles;
+                    playerTransform.localEulerAngles = localEulerAngles;
                 }
                 _cinematicMode = value;
             }
@@ -56,7 +53,7 @@ namespace com.yw2theorycrafter.thirdpersonview
             set {
                 if (value == _inVehicle) return;
                 if (!value) {
-                    Vector3 localEulerAngles = GetComponentInParent<Player>().transform.localEulerAngles;
+                    Vector3 localEulerAngles = playerTransform.localEulerAngles;
                     localEulerAngles.x *= 2;
                     localEulerAngles.y = 0;
                     playerTransform.localEulerAngles = localEulerAngles;
@@ -65,46 +62,16 @@ namespace com.yw2theorycrafter.thirdpersonview
             }
         }
 
-        private bool _usingPda;
-        private bool UsingPDA {
-            set {
-                if (value == _usingPda) return;
-                if (!value) {
-                    cameraTransform.localEulerAngles = new Vector3(rotationX, rotationY);
-                }
-                _usingPda = value;
-            }
-        }
+        private bool UsingPDA = false;
 
         private bool pilotingCyclops;
 
-        private bool _insideTightSpace = false;
-        public void SetInsideTightSpace(bool value) {
-            if (value == _insideTightSpace) return;
-            if (cameraToPlayerManagerOverride) return;
-            
-            _insideTightSpace = value;
-            
-            value &= config.switchToFirstPersonWhenInside;
-            MainCameraControl.main.enabled = value;
-            main.enabled = !value;
-        }
-
-        public void RefreshTightSpaceStatus() {
-            bool value = _insideTightSpace && config.switchToFirstPersonWhenInside;
-            MainCameraControl.main.enabled = value;
-            main.enabled = !value;
-        }
+        private bool InsideTightSpace = false;
 
         private void OnEnable() {
-            var mainControl = GetComponent<MainCameraControl>();
-            if (mainControl == null) {
-                enabled = false;
-                return;
-            }
-
-            if (main == null) {
-                SetupSingleton(mainControl);
+            if (!main)
+            {
+                SetupSingleton();
             }
 
             if (Player.main != null)
@@ -112,23 +79,21 @@ namespace com.yw2theorycrafter.thirdpersonview
         }
 
         private void OnDisable() {
-
-            var mainControl = GetComponent<MainCameraControl>();
-            if (mainControl == null) {
-                return;
-            }
-
             if (Player.main != null)
                 Player.main.SetHeadVisible(false);
         }
 
-        private void SetupSingleton(MainCameraControl mainControl) {
-            main = this;
+        private void SetupSingleton()
+        {
+            //Inside this method, be careful about accessing other singletons.
 
             focusTransform = transform;
-            cameraTransform = mainControl.cameraOffsetTransform;
-            viewModelTransform = mainControl.viewModel;
-            playerTransform = GetComponentInParent<Player>().transform;
+
+            var mainCameraControl = GetComponent<MainCameraControl>();
+            cameraTransform = mainCameraControl.cameraOffsetTransform;
+            viewModelTransform = mainCameraControl.viewModel;
+            var player = GetComponentInParent<Player>();
+            playerTransform = player.transform;
 
             config = new ThirdPersonViewConfig();
 
@@ -136,32 +101,31 @@ namespace com.yw2theorycrafter.thirdpersonview
             cameraHalfExtends.x = cameraHalfExtends.y * Camera.main.aspect;
             cameraHalfExtends.z = 0;
 
-            skin = mainControl.skin;
+            skin = mainCameraControl.skin;
 
-            // this is a hack, but i have no clue what's causing the y offset, so ig this works ¯\_(ツ)_/¯
-            pdaOffset = new Vector3(0, 0.0575f, 0.05f);
+            main = this;
         }
 
-        private void RefreshState() {
+        public void RefreshState() {
             UsingPDA = Player.main.GetPDA().isInUse;
             InVehicle = Player.main.isPiloting && !Player.main.IsInSub();
             pilotingCyclops = Player.main.isPiloting && Player.main.IsInSub();
+            InsideTightSpace = Player.main.IsInBase() || Player.main.IsInSubmarine();
+
+            //Unfortunately, switching back immediately causes a little animation glitch, but it's better than seeing the MainCameraControllerPatch for a split second.
+            enabled = !UsingPDA && !InsideTightSpace;
+            MainCameraControl.main.enabled = !enabled;
         }
 
         private void Update() {
-
             // assert fps input module
             if (FPSInputModule.current == null) return;
 
             RefreshState();
-            if (_usingPda) {
-                Update_PDA();
-            } else {
-                Update_Default();
+            if (!enabled)
+            {
+                return;
             }
-        }
-
-        private void Update_Default() {
 
             UpdateFocusPoint();
 
@@ -212,16 +176,6 @@ namespace com.yw2theorycrafter.thirdpersonview
             return currentDistance;
         }
 
-        private void Update_PDA() {
-
-            rotationX = 0;
-            UpdateViewModel();
-
-            cameraTransform.localPosition = Vector3.zero;
-            //var lookPosition = Player.main.transform.position + focusTransform.TransformDirection(pdaOffset);
-            //var lookRotation = playerTransform.rotation;
-        }
-
         private void UpdateFocusPoint() {
             focusPointLastFrame = focusPoint;
 
@@ -263,7 +217,8 @@ namespace com.yw2theorycrafter.thirdpersonview
             return false;
         }
 
-        private bool AutomaticRotation() {
+        private bool AutomaticRotation()
+        {
             if (Time.unscaledTime - lastManualRotationTime < config.alignDelay) {
                 return false;
             }
@@ -276,7 +231,6 @@ namespace com.yw2theorycrafter.thirdpersonview
             if (movementDeltaSqr < 0.000001f) {
                 return false;
             }
-
             float headingAngle = GetAngle(movement / Mathf.Sqrt(movementDeltaSqr));
             float deltaAbs = Mathf.Abs(Mathf.DeltaAngle(rotationY, headingAngle));
             float rotationChange = config.rotationSpeed * Mathf.Min(Time.unscaledDeltaTime, movementDeltaSqr);
