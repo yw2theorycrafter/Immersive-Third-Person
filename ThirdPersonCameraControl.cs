@@ -48,23 +48,12 @@ namespace com.yw2theorycrafter.thirdpersonview
             }
         }
 
-        private bool _inVehicle;
-        public bool InVehicle {
-            set {
-                if (value == _inVehicle) return;
-                if (!value) {
-                    Vector3 localEulerAngles = playerTransform.localEulerAngles;
-                    localEulerAngles.x *= 2;
-                    localEulerAngles.y = 0;
-                    playerTransform.localEulerAngles = localEulerAngles;
-                }
-                _inVehicle = value;
-            }
-        }
+        private bool InVehicle = false;
 
         private bool UsingPDA = false;
 
         private bool pilotingCyclops;
+        private bool pilotingPrawn;
 
         private bool InsideTightSpace = false;
 
@@ -110,10 +99,11 @@ namespace com.yw2theorycrafter.thirdpersonview
             UsingPDA = Player.main.GetPDA().isInUse;
             InVehicle = Player.main.isPiloting && !Player.main.IsInSub();
             pilotingCyclops = Player.main.isPiloting && Player.main.IsInSub();
+            pilotingPrawn = Player.main.isPiloting && Player.main.IsInClawExosuit();
             InsideTightSpace = Player.main.IsInBase() || Player.main.IsInSubmarine();
 
             //Unfortunately, switching back immediately causes a little animation glitch, but it's better than seeing the MainCameraControllerPatch for a split second.
-            enabled = !UsingPDA && !InsideTightSpace;
+            enabled = !UsingPDA && !pilotingPrawn && !InsideTightSpace;
             MainCameraControl.main.enabled = !enabled;
         }
 
@@ -140,32 +130,28 @@ namespace com.yw2theorycrafter.thirdpersonview
 
             Vector3 lookDirection = lookRotation * Vector3.forward;
 
-            if (_inVehicle) {
-                if (Player.main.IsInSub()) lookPosition = -1 * Vector3.forward * SmoothMoveToDistance(config.cyclopsDistance);
-                else lookPosition = -1 * Vector3.forward * SmoothMoveToDistance(config.vehicleDistance);
-            } else {
-                lookPosition = focusPoint - lookDirection * config.swimDistance;
+            lookPosition = focusPoint - lookDirection * config.swimDistance;
 
-                Vector3 rectOffset = lookDirection * Camera.main.nearClipPlane;
-                Vector3 rectPosition = lookPosition + rectOffset;
-                Vector3 castFrom = focusPoint;
-                Vector3 castLine = rectPosition - castFrom;
-                float castDistance = castLine.magnitude;
-                Vector3 castDirection = castLine / castDistance;
+            Vector3 rectOffset = lookDirection * Camera.main.nearClipPlane;
+            Vector3 rectPosition = lookPosition + rectOffset;
+            Vector3 castFrom = focusPoint;
+            Vector3 castLine = rectPosition - castFrom;
+            float castDistance = castLine.magnitude;
+            Vector3 castDirection = castLine / castDistance;
 
-                if (Physics.BoxCast(castFrom, cameraHalfExtends, castDirection, out var hit, lookRotation, castDistance, obstructionMask)) {
+            if (Physics.BoxCast(castFrom, cameraHalfExtends, castDirection, out var hit, lookRotation, castDistance, obstructionMask)) {
 #if DEBUG
-                    Plugin.Logger.LogInfo($"Hit! {hit.collider} layer={hit.collider.gameObject.layer}");
+                Plugin.Logger.LogInfo($"Hit! {hit.collider} layer={hit.collider.gameObject.layer}");
 #endif
-                    currentDistance = hit.distance;
-                    lookPosition = -1 * Vector3.forward * currentDistance;
-                } else {
-                    lookPosition = -1 * Vector3.forward * SmoothMoveToDistance(config.swimDistance);
-                }
+                currentDistance = hit.distance;
+                lookPosition = -1 * Vector3.forward * currentDistance;
+            } else {
+                lookPosition = -1 * Vector3.forward * SmoothMoveToDistance(config.swimDistance);
             }
 
             //When this is not called, the camera does not move at all.
             cameraTransform.localPosition = lookPosition;
+            cameraTransform.localEulerAngles = Vector3.zero;
             if (!CinematicMode) {
                 UpdateViewModel();
             }
@@ -249,15 +235,15 @@ namespace com.yw2theorycrafter.thirdpersonview
         private void UpdateViewModel() {
 
             var headingAngles = new Vector3(rotationX, rotationY);
+            //TODO get rid of transform
             transform.localEulerAngles = Vector3.zero;
             transform.localPosition = Vector3.down * skin;
             viewModelTransform.localEulerAngles = Vector3.zero;
             viewModelTransform.localPosition = transform.localPosition;
-            if (!_inVehicle) {
-                // Player transform needs only Y input, since view model, which is its child, is rotated on the X axis via animation
-                playerTransform.localEulerAngles = Vector3.up * headingAngles.y;
-                transform.localEulerAngles = Vector3.right * headingAngles.x;
-            }
+
+            // Player transform needs only Y input, since view model, which is its child, is rotated on the X axis via animation
+            playerTransform.localEulerAngles = Vector3.up * headingAngles.y;
+            transform.localEulerAngles = Vector3.right * headingAngles.x;
         }
 
         private void ConstrainAngles()

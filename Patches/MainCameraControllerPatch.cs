@@ -20,7 +20,7 @@ namespace com.yw2theorycrafter.thirdpersonview {
 
     [HarmonyPatch(typeof(MainCameraControl), "set_cinematicMode")]
     class MainCameraControl_SetCinematicModePatch {
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         public static bool Prefix(MainCameraControl __instance, bool value) {
             var thirdPersonControl = ThirdPersonCameraControl.main;
             var ret = true;
@@ -37,19 +37,21 @@ namespace com.yw2theorycrafter.thirdpersonview {
 
     [HarmonyPatch(typeof(MainCameraControl), nameof(MainCameraControl.ResetCamera))]
     class MainCameraControl_ResetCameraPatch {
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         public static bool Prefix(MainCameraControl __instance) { 
             var thirdPersonControl = ThirdPersonCameraControl.main;
-            var ret = thirdPersonControl == null || !thirdPersonControl.enabled;
+            //var ret = thirdPersonControl == null || !thirdPersonControl.enabled;
+            var ret = true;
 #if DEBUG
             Plugin.Logger.LogInfo($"ResetCamera {ret}");
 #endif
             return ret;
         }
     }
+
     [HarmonyPatch(typeof(MainCameraControl), nameof(MainCameraControl.LookAt))]
     class MainCameraControl_LookAtPatch {
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         public static bool Prefix(MainCameraControl __instance) {
             var thirdPersonControl = ThirdPersonCameraControl.main;
             var ret = thirdPersonControl == null || !thirdPersonControl.enabled;
