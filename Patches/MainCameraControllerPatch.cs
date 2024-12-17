@@ -18,6 +18,7 @@ namespace com.yw2theorycrafter.thirdpersonview {
         }
     }
 
+#pragma warning disable Harmony002 // Patching properties by patching get_ or set_ is not recommended
     [HarmonyPatch(typeof(MainCameraControl), "set_cinematicMode")]
     class MainCameraControl_SetCinematicModePatch {
         [HarmonyPrefix]

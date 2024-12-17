@@ -4,15 +4,15 @@ namespace com.yw2theorycrafter.thirdpersonview {
     [HarmonyPatch(typeof(Player), nameof(Player.SetScubaMaskActive))]
     class Player_SetScubaMaskActivePatch {
         [HarmonyPrefix]
-        public static bool Prefix(Player __instance) {
+        public static bool Prefix(Player __instance, bool state) {
             var thirdPersonControl = ThirdPersonCameraControl.main;
             var ret = true;
-            if (thirdPersonControl && thirdPersonControl.enabled)
+            if (state && thirdPersonControl && thirdPersonControl.enabled)
             {
                 ret = false;
             }
 #if DEBUG
-            Plugin.Logger.LogInfo($"SetScubaMaskActive {ret}");
+            Plugin.Logger.LogInfo($"SetScubaMaskActive state={state} {ret}");
 #endif
             return ret;
         }

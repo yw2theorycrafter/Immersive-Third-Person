@@ -21,9 +21,9 @@ namespace com.yw2theorycrafter.thirdpersonview
         private ThirdPersonViewConfig config;
 
         //Camera ignores player and all default collision masks
-        //Also layer 0, had some weird collisions on that layer
+        //layer 0 had some weird collisions on that layer, but leaving on for now 
         //Also layer 21 - TODO why?
-        private int obstructionMask = (~(1 << 0)) & (~(1 << 21)) & (~(1 << LayerID.Player)) & LayerID.DefaultCollisionMask;
+        private int obstructionMask = (~(1 << 21)) & (~(1 << LayerID.Player)) & LayerID.DefaultCollisionMask;
         private Vector3 cameraHalfExtends;
 
         private bool _cinematicMode;
@@ -52,6 +52,7 @@ namespace com.yw2theorycrafter.thirdpersonview
 
         private bool UsingPDA = false;
 
+        private bool pilotingAnything;
         private bool pilotingCyclops;
         private bool pilotingPrawn;
 
@@ -97,13 +98,17 @@ namespace com.yw2theorycrafter.thirdpersonview
 
         public void RefreshState() {
             UsingPDA = Player.main.GetPDA().isInUse;
-            InVehicle = Player.main.isPiloting && !Player.main.IsInSub();
-            pilotingCyclops = Player.main.isPiloting && Player.main.IsInSub();
-            pilotingPrawn = Player.main.isPiloting && Player.main.IsInClawExosuit();
+            //TODO support for being 3rd person while piloting
+            pilotingAnything = Player.main.isPiloting;
             InsideTightSpace = Player.main.IsInBase() || Player.main.IsInSubmarine();
 
-            //Unfortunately, switching back immediately causes a little animation glitch, but it's better than seeing the MainCameraControllerPatch for a split second.
-            enabled = !UsingPDA && !pilotingPrawn && !InsideTightSpace && config.enabled;
+            //Unfortunately, exiting from the PDA view causes a little animation glitch, but it's better than seeing the MainCameraControllerPatch for a split second
+            bool shouldEnable = config.enabled && !UsingPDA && !pilotingAnything;
+            if (config.switchToFirstPersonWhenInside)
+            {
+                shouldEnable = shouldEnable && !InsideTightSpace;
+            }
+            enabled = shouldEnable;
             MainCameraControl.main.enabled = !enabled;
         }
 
@@ -139,11 +144,12 @@ namespace com.yw2theorycrafter.thirdpersonview
             float castDistance = castLine.magnitude;
             Vector3 castDirection = castLine / castDistance;
 
-            if (Physics.BoxCast(castFrom, cameraHalfExtends, castDirection, out var hit, lookRotation, castDistance, obstructionMask)) {
+            // using cameraHalfExtends * castDistance gives us a really conservative camera collision handler, avoiding clipping even at max distance.
+            if (Physics.BoxCast(castFrom, cameraHalfExtends * castDistance, castDirection, out var hit, lookRotation, castDistance, obstructionMask, QueryTriggerInteraction.Ignore)) {
 #if DEBUG
                 Plugin.Logger.LogInfo($"Hit! {hit.collider} layer={hit.collider.gameObject.layer}");
 #endif
-                currentDistance = hit.distance;
+                currentDistance = Mathf.Max(0, hit.distance - Camera.main.nearClipPlane);
                 lookPosition = -1 * Vector3.forward * currentDistance;
             } else {
                 lookPosition = -1 * Vector3.forward * SmoothMoveToDistance(config.swimDistance);
@@ -265,6 +271,10 @@ namespace com.yw2theorycrafter.thirdpersonview
         }
 
         public static Vector2 GetVehicleLookDelta() {
+            if (!main || !main.enabled)
+            {
+                return GameInput.GetLookDelta();
+            }
             Vehicle vehicle = Player.main.GetVehicle();
             if (MainCameraControl.main != null && vehicle != null) {
                 var thirdPersonControl = MainCameraControl.main.GetComponent<ThirdPersonCameraControl>();
@@ -277,9 +287,18 @@ namespace com.yw2theorycrafter.thirdpersonview
         }
 
         public static Vector3 GetFocusPosition(Transform tf) {
+            if (!main || !main.enabled)
+            {
+                return tf.position;
+            }
             return main.focusTransform.position;
         }
-        public static Vector3 GetFocusForward(Transform tf) {
+        public static Vector3 GetFocusForward(Transform tf)
+        {
+            if (!main || !main.enabled)
+            {
+                return tf.forward;
+            }
             var pointInFrontOfCamera = Camera.main.transform.TransformPoint(Vector3.forward * (2 + main.currentDistance));
             return (pointInFrontOfCamera - GetFocusPosition(tf)).normalized;
         }

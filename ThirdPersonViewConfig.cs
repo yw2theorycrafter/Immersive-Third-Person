@@ -3,11 +3,11 @@ using UnityEngine;
 
 namespace com.yw2theorycrafter.thirdpersonview {
     class ThirdPersonViewConfig {
-        //[Toggle("Enable third person view except for prawn/bases/cyclops")]
-        public bool enabled = false;
+        //[Toggle("Enable third person view when available")]
+        public bool enabled = true;
 
         //[Slider("Radius of camera sphere (swimming)", 1, 10, DefaultValue = 3)]
-        public float swimDistance = 3;
+        public float swimDistance = 6;
 
         //[Slider("Radius of camera sphere (seamoth/prawn)", 1, 10, DefaultValue = 6)]
         public float vehicleDistance = 6;
@@ -16,6 +16,7 @@ namespace com.yw2theorycrafter.thirdpersonview {
         public float cyclopsDistance = 1;
 
         //[Toggle("Switch to first person in bases/cyclops"), OnChange(nameof(OnFirstPersonInBaseChange))]
+        //Recommend leaving this true.
         public bool switchToFirstPersonWhenInside = true;
 
         //[Slider("Sensitivity (deg/s)", 1, 180, DefaultValue = 90)]
