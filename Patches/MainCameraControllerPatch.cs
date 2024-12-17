@@ -25,12 +25,11 @@ namespace com.yw2theorycrafter.thirdpersonview {
         public static bool Prefix(MainCameraControl __instance, bool value) {
             var thirdPersonControl = ThirdPersonCameraControl.main;
             var ret = true;
-            if (thirdPersonControl && thirdPersonControl.enabled) {
+            if (thirdPersonControl) {
                 thirdPersonControl.CinematicMode = value;
-                ret = false;
             }
 #if DEBUG
-            Plugin.Logger.LogInfo($"SetCinematicMode {ret}");
+            Plugin.Logger.LogInfo($"SetCinematicMode value={value} {ret}");
 #endif
             return ret;
         }

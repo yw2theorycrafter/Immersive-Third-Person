@@ -26,27 +26,7 @@ namespace com.yw2theorycrafter.thirdpersonview
         private int obstructionMask = (~(1 << 21)) & (~(1 << LayerID.Player)) & LayerID.DefaultCollisionMask;
         private Vector3 cameraHalfExtends;
 
-        private bool _cinematicMode;
-        public bool CinematicMode { get {
-                return _cinematicMode;
-            }
-            set {
-                if (value == _cinematicMode) return;
-                if (value) {
-                    playerTransform.localEulerAngles = new Vector3(rotationX, rotationY, 0);
-                    transform.localEulerAngles = Vector3.zero;
-                    viewModelTransform.localEulerAngles = Vector3.zero;
-                    lastManualRotationTime = 0;
-
-                } else {
-                    Vector3 localEulerAngles = playerTransform.localEulerAngles;
-                    localEulerAngles.x *= 2;
-                    localEulerAngles.y = 0;
-                    playerTransform.localEulerAngles = localEulerAngles;
-                }
-                _cinematicMode = value;
-            }
-        }
+        public bool CinematicMode;
 
         private bool InVehicle = false;
 
@@ -156,9 +136,10 @@ namespace com.yw2theorycrafter.thirdpersonview
             }
 
             //When this is not called, the camera does not move at all.
-            cameraTransform.localPosition = lookPosition;
-            cameraTransform.localEulerAngles = Vector3.zero;
-            if (!CinematicMode) {
+            if (!CinematicMode)
+            {
+                cameraTransform.localPosition = lookPosition;
+                cameraTransform.localEulerAngles = Vector3.zero;
                 UpdateViewModel();
             }
         }
