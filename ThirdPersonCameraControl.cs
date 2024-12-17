@@ -103,7 +103,7 @@ namespace com.yw2theorycrafter.thirdpersonview
             InsideTightSpace = Player.main.IsInBase() || Player.main.IsInSubmarine();
 
             //Unfortunately, switching back immediately causes a little animation glitch, but it's better than seeing the MainCameraControllerPatch for a split second.
-            enabled = !UsingPDA && !pilotingPrawn && !InsideTightSpace;
+            enabled = !UsingPDA && !pilotingPrawn && !InsideTightSpace && config.enabled;
             MainCameraControl.main.enabled = !enabled;
         }
 

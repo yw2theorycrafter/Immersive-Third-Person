@@ -1,7 +1,10 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace com.yw2theorycrafter.thirdpersonview {
     class ThirdPersonViewConfig {
+        //[Toggle("Enable third person view except for prawn/bases/cyclops")]
+        public bool enabled = false;
 
         //[Slider("Radius of camera sphere (swimming)", 1, 10, DefaultValue = 3)]
         public float swimDistance = 3;
