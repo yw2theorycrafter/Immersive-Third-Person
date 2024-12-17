@@ -7,7 +7,8 @@ namespace com.yw2theorycrafter.thirdpersonview {
         public static bool Prefix(Player __instance, bool state) {
             var thirdPersonControl = ThirdPersonCameraControl.main;
             var ret = true;
-            if (state && thirdPersonControl && thirdPersonControl.enabled)
+            //Prevent enabling the scuba mask whenever ThirdPersonView is enabled via config.
+            if (state && thirdPersonControl && thirdPersonControl.config.enabled)
             {
                 ret = false;
             }

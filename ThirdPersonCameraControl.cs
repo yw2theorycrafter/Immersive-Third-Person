@@ -18,7 +18,7 @@ namespace com.yw2theorycrafter.thirdpersonview
         private float currentDistance;
         private float skin;
 
-        private ThirdPersonViewConfig config;
+        public ThirdPersonViewConfig config;
 
         //Camera ignores player and all default collision masks
         //layer 0 had some weird collisions on that layer, but leaving on for now 
@@ -26,15 +26,9 @@ namespace com.yw2theorycrafter.thirdpersonview
         private int obstructionMask = (~(1 << 21)) & (~(1 << LayerID.Player)) & LayerID.DefaultCollisionMask;
         private Vector3 cameraHalfExtends;
 
-        public bool CinematicMode;
-
-        private bool InVehicle = false;
-
         private bool UsingPDA = false;
 
         private bool pilotingAnything;
-        private bool pilotingCyclops;
-        private bool pilotingPrawn;
 
         private bool InsideTightSpace = false;
 
@@ -67,8 +61,11 @@ namespace com.yw2theorycrafter.thirdpersonview
 
             config = new ThirdPersonViewConfig();
 
-            cameraHalfExtends.y = Camera.main.nearClipPlane * Mathf.Tan(0.5f * Mathf.Deg2Rad * Camera.main.fieldOfView);
-            cameraHalfExtends.x = cameraHalfExtends.y * Camera.main.aspect;
+            //Defines the camera collision box to avoid clipping.
+            //Values > 0.1f seem to break the collision, values < 0.1f place the camera too close to the wall causing frustrum clipping
+            //These values are roughly the size of the player head, that makes sense.
+            cameraHalfExtends.y = 0.1f;
+            cameraHalfExtends.x = 0.1f;
             cameraHalfExtends.z = 0;
 
             skin = mainCameraControl.skin;
@@ -106,7 +103,11 @@ namespace com.yw2theorycrafter.thirdpersonview
 
             Vector3 lookPosition;
             Quaternion lookRotation;
-            if (!FPSInputModule.current.lockRotation && (ManualRotation() || AutomaticRotation())) {
+
+            if (MainCameraControl.main.cinematicMode)
+            {
+                lookRotation = cameraTransform.rotation;
+            } else if (!FPSInputModule.current.lockRotation && (ManualRotation() || AutomaticRotation())) {
                 ConstrainAngles();
                 lookRotation = Quaternion.Euler(rotationX, rotationY, 0);
             } else {
@@ -115,31 +116,29 @@ namespace com.yw2theorycrafter.thirdpersonview
 
             Vector3 lookDirection = lookRotation * Vector3.forward;
 
-            lookPosition = focusPoint - lookDirection * config.swimDistance;
+            Vector3 castFrom = cameraTransform.parent.position;
+            lookPosition = castFrom - lookDirection * config.swimDistance;
 
-            Vector3 rectOffset = lookDirection * Camera.main.nearClipPlane;
-            Vector3 rectPosition = lookPosition + rectOffset;
-            Vector3 castFrom = focusPoint;
-            Vector3 castLine = rectPosition - castFrom;
+            Vector3 castLine = lookPosition - castFrom;
             float castDistance = castLine.magnitude;
             Vector3 castDirection = castLine / castDistance;
 
-            // using cameraHalfExtends * castDistance gives us a really conservative camera collision handler, avoiding clipping even at max distance.
-            if (Physics.BoxCast(castFrom, cameraHalfExtends * castDistance, castDirection, out var hit, lookRotation, castDistance, obstructionMask, QueryTriggerInteraction.Ignore)) {
+            if (Physics.BoxCast(castFrom, cameraHalfExtends, castDirection, out var hit, lookRotation, castDistance, obstructionMask, QueryTriggerInteraction.Ignore)) {
 #if DEBUG
                 Plugin.Logger.LogInfo($"Hit! {hit.collider} layer={hit.collider.gameObject.layer}");
 #endif
-                currentDistance = Mathf.Max(0, hit.distance - Camera.main.nearClipPlane);
+                //Prevent clipping into the player's head
+                currentDistance = Mathf.Max(0.25f, hit.distance);
                 lookPosition = -1 * Vector3.forward * currentDistance;
             } else {
                 lookPosition = -1 * Vector3.forward * SmoothMoveToDistance(config.swimDistance);
             }
 
             //When this is not called, the camera does not move at all.
-            if (!CinematicMode)
+            cameraTransform.localPosition = lookPosition;
+            cameraTransform.localEulerAngles = Vector3.zero;
+            if (!MainCameraControl.main.cinematicMode)
             {
-                cameraTransform.localPosition = lookPosition;
-                cameraTransform.localEulerAngles = Vector3.zero;
                 UpdateViewModel();
             }
         }
@@ -236,14 +235,8 @@ namespace com.yw2theorycrafter.thirdpersonview
         private void ConstrainAngles()
         {
             //This is not causing jerks.
-
-            if (pilotingCyclops) {
-                rotationX = Mathf.Clamp(rotationX % 360, -60, 60);
-                rotationY = Mathf.Clamp(rotationY % 360, -60 + transform.eulerAngles.y, 60 + transform.eulerAngles.y);
-            } else {
-                rotationX = Mathf.Clamp(rotationX % 360, -80, 80);
-                rotationY %= 360;
-            }
+            rotationX = Mathf.Clamp(rotationX % 360, -80, 80);
+            rotationY %= 360;
         }
 
         private static float GetAngle(Vector2 direction) {
