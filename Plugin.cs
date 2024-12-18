@@ -10,7 +10,7 @@ namespace com.yw2theorycrafter.thirdpersonview
     {
         private const string MyGuid = "com.yw2theorycrafter.thirdpersonview";
         private const string PluginName = "Third Person View";
-        private const string VersionString = "2.0.0";
+        private const string VersionString = "1.0.0";
 
         public new static ManualLogSource Logger { get; private set; }
 

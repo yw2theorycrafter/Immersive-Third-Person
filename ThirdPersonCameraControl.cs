@@ -15,9 +15,7 @@ namespace com.yw2theorycrafter.thirdpersonview
 
         private float rotationX;
         private float rotationY;
-        private Vector3 focusPoint;
         private float currentDistance;
-        private float skin;
 
         public ThirdPersonViewConfig config;
 
@@ -67,8 +65,6 @@ namespace com.yw2theorycrafter.thirdpersonview
             cameraHalfExtends.x = 0.1f;
             cameraHalfExtends.z = 0;
 
-            skin = mainCameraControl.skin;
-
             main = this;
         }
 
@@ -114,9 +110,7 @@ namespace com.yw2theorycrafter.thirdpersonview
             {
                 return;
             }
-
-            UpdateFocusPoint();
-
+            
             Vector3 lookPosition;
             Quaternion lookRotation;
 
@@ -171,32 +165,6 @@ namespace com.yw2theorycrafter.thirdpersonview
             return currentDistance;
         }
 
-        private void UpdateFocusPoint() {
-            //XXX
-            focusPoint = focusTransform.position;
-
-            /*
-            Vector3 targetPoint = focusTransform.position;
-            if (pilotingCyclops) {
-                targetPoint -= focusTransform.forward * 1;
-            }
-
-            if (config.focusRadius > 0 && !_usingPda) {
-                var distance = Vector3.Distance(targetPoint, focusPoint);
-                var t = 1f;
-                if (distance > 0.01f && config.focusCentering > 0) {
-                    t = Mathf.Pow(1 - config.focusCentering, Time.unscaledDeltaTime);
-                }
-                if (distance > config.focusRadius) {
-                    t = Mathf.Min(t, config.focusRadius / distance);
-                }
-                focusPoint = Vector3.Lerp(targetPoint, focusPoint, t);
-            } else {
-                focusPoint = targetPoint;
-            }
-            */
-        }
-
         private void ManualRotation() {
             Vector2 input = GameInput.GetLookDelta();
             rotationX -= config.rotationSpeed * Time.unscaledDeltaTime * input.y * Mathf.Rad2Deg;
@@ -212,13 +180,10 @@ namespace com.yw2theorycrafter.thirdpersonview
             viewModelTransform.localEulerAngles = Vector3.up * headingAngles.y;
             //This rotates the camera
             transform.localEulerAngles = headingAngles;
-
-
         }
 
         private void ConstrainAngles()
         {
-            //This is not causing jerks.
             rotationX = Mathf.Clamp(rotationX % 360, -80, 80);
             rotationY %= 360;
         }
@@ -226,22 +191,6 @@ namespace com.yw2theorycrafter.thirdpersonview
         private static float GetAngle(Vector2 direction) {
             float angle = Mathf.Acos(direction.y) * Mathf.Rad2Deg;
             return direction.x > 0 ? angle : 360 - angle;
-        }
-
-        public static Vector2 GetVehicleLookDelta() {
-            if (!main || !main.enabled)
-            {
-                return GameInput.GetLookDelta();
-            }
-            Vehicle vehicle = Player.main.GetVehicle();
-            if (MainCameraControl.main != null && vehicle != null) {
-                var thirdPersonControl = MainCameraControl.main.GetComponent<ThirdPersonCameraControl>();
-                var headingAngles = new Vector3(thirdPersonControl.rotationX, thirdPersonControl.rotationY);
-                var vehicleAngles = vehicle.transform.localEulerAngles;
-
-                return new Vector2(Mathf.DeltaAngle(vehicleAngles.y, headingAngles.y), -Mathf.DeltaAngle(vehicleAngles.x, headingAngles.x)) * Time.deltaTime;
-            }
-            return Vector2.zero;
         }
 
         public static Vector3 GetFocusPosition(Transform tf) {

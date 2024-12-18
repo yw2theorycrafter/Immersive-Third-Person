@@ -18,11 +18,5 @@ namespace com.yw2theorycrafter.thirdpersonview {
 
         //[Slider("Camera distance change speed (m/s)", 0.1f, 10, DefaultValue = 5)]
         public float cameraDistanceDelta = 5;
-
-        //[Slider("Focus area radius", 0, 1.5f, DefaultValue = 0.4f)]
-        public float focusRadius = 0.4f;
-
-        //[Slider("Focus centering strength", 0, 1, DefaultValue = 0.7f)]
-        public float focusCentering = 0.7f;
     }
 }

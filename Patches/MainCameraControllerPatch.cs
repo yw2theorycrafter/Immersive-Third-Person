@@ -18,19 +18,6 @@ namespace com.yw2theorycrafter.thirdpersonview {
         }
     }
 
-#pragma warning disable Harmony002 // Patching properties by patching get_ or set_ is not recommended
-    [HarmonyPatch(typeof(MainCameraControl), "set_cinematicMode")]
-    class MainCameraControl_SetCinematicModePatch {
-        [HarmonyPrefix]
-        public static bool Prefix(MainCameraControl __instance, bool value) {
-            var ret = true;
-#if DEBUG
-            Plugin.Logger.LogInfo($"SetCinematicMode value={value} {ret}");
-#endif
-            return ret;
-        }
-    }
-
     [HarmonyPatch(typeof(MainCameraControl), nameof(MainCameraControl.ResetCamera))]
     class MainCameraControl_ResetCameraPatch {
         [HarmonyPrefix]
