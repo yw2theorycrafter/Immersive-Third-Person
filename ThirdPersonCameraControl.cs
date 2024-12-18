@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace com.yw2theorycrafter.thirdpersonview
 {
@@ -9,12 +10,12 @@ namespace com.yw2theorycrafter.thirdpersonview
         private Transform focusTransform;
         private Transform cameraTransform;
         private Transform viewModelTransform;
-        private Transform playerTransform;
+
+        public PlayerBreathBubbles breathBubbles;
 
         private float rotationX;
         private float rotationY;
-        private float lastManualRotationTime;
-        private Vector3 focusPoint, focusPointLastFrame;
+        private Vector3 focusPoint;
         private float currentDistance;
         private float skin;
 
@@ -56,8 +57,6 @@ namespace com.yw2theorycrafter.thirdpersonview
             var mainCameraControl = GetComponent<MainCameraControl>();
             cameraTransform = mainCameraControl.cameraOffsetTransform;
             viewModelTransform = mainCameraControl.viewModel;
-            var player = GetComponentInParent<Player>();
-            playerTransform = player.transform;
 
             config = new ThirdPersonViewConfig();
 
@@ -94,6 +93,16 @@ namespace com.yw2theorycrafter.thirdpersonview
             }
             enabled = shouldEnable;
             MainCameraControl.main.enabled = !enabled;
+            if (breathBubbles)
+            {
+                breathBubbles.enabled = !enabled;
+            }
+
+            if (!enabled)
+            {
+                rotationX = 0;
+                rotationY = cameraTransform.rotation.eulerAngles.y;
+            }
         }
 
         private void Update() {
@@ -114,10 +123,14 @@ namespace com.yw2theorycrafter.thirdpersonview
             if (MainCameraControl.main.cinematicMode)
             {
                 lookRotation = cameraTransform.rotation;
-            } else if (!FPSInputModule.current.lockRotation && (ManualRotation() || AutomaticRotation())) {
+                rotationX = 0;
+                rotationY = lookRotation.eulerAngles.y;
+            } else { 
+                if (!FPSInputModule.current.lockRotation)
+                {
+                    ManualRotation();
+                }
                 ConstrainAngles();
-                lookRotation = Quaternion.Euler(rotationX, rotationY, 0);
-            } else {
                 lookRotation = Quaternion.Euler(rotationX, rotationY, 0);
             }
 
@@ -159,8 +172,6 @@ namespace com.yw2theorycrafter.thirdpersonview
         }
 
         private void UpdateFocusPoint() {
-            focusPointLastFrame = focusPoint;
-
             //XXX
             focusPoint = focusTransform.position;
 
@@ -186,70 +197,23 @@ namespace com.yw2theorycrafter.thirdpersonview
             */
         }
 
-        private bool ManualRotation() {
-
+        private void ManualRotation() {
             Vector2 input = GameInput.GetLookDelta();
-            const float e = 0.001f;
-            if (input.x < -e || input.x > e || input.y < -e || input.y > e) {
-                rotationX -= config.rotationSpeed * Time.unscaledDeltaTime * input.y;
-                rotationY += config.rotationSpeed * Time.unscaledDeltaTime * input.x;
-                lastManualRotationTime = Time.unscaledTime;
-                return true;
-            }
-            return false;
-        }
-
-        private bool AutomaticRotation()
-        {
-            if (Time.unscaledTime - lastManualRotationTime < config.alignDelay) {
-                return false;
-            }
-
-            Vector2 movement = new Vector2(
-                focusPoint.x - focusPointLastFrame.x,
-                focusPoint.z - focusPointLastFrame.z
-            ); // here we're concerned only about rotating about Y axis, so we look only at movement in XZ plane
-            float movementDeltaSqr = movement.sqrMagnitude;
-            if (movementDeltaSqr < 0.000001f) {
-                return false;
-            }
-            float headingAngle = GetAngle(movement / Mathf.Sqrt(movementDeltaSqr));
-            float deltaAbs = Mathf.Abs(Mathf.DeltaAngle(rotationY, headingAngle));
-            float rotationChange = config.rotationSpeed * Mathf.Min(Time.unscaledDeltaTime, movementDeltaSqr);
-            if (deltaAbs < config.alignSmoothRange) {
-                rotationChange *= deltaAbs / config.alignSmoothRange;
-            } 
-            else if (180f - deltaAbs < config.alignSmoothRange) {
-                rotationChange *= (180f - deltaAbs) / config.alignSmoothRange;
-            }
-            rotationY = Mathf.MoveTowardsAngle(rotationY, headingAngle, rotationChange);
-
-            return true;
+            rotationX -= config.rotationSpeed * Time.unscaledDeltaTime * input.y * Mathf.Rad2Deg;
+            rotationY += config.rotationSpeed * Time.unscaledDeltaTime * input.x * Mathf.Rad2Deg;
         }
 
         // Updates this component's transform, as well as player viewmodel
         private void UpdateViewModel() {
 
             var headingAngles = new Vector3(rotationX, rotationY);
-            //TODO get rid of transform
-            /*
-            transform.localEulerAngles = Vector3.zero;
-            transform.localPosition = Vector3.down * skin;
-            */
 
-            //? does nothing?
-            /*
-            viewModelTransform.localEulerAngles = Vector3.zero;
-            viewModelTransform.localPosition = transform.localPosition;
-            */
-
-            // Player transform needs only Y input, since view model, which is its child, is rotated on the X axis via animation
-            // This is not smooth to change.
-            // playerTransform.localEulerAngles = Vector3.up * headingAngles.y;
-
+            //This rotates the player
             viewModelTransform.localEulerAngles = Vector3.up * headingAngles.y;
-            //transform.localEulerAngles = Vector3.right * headingAngles.x;
+            //This rotates the camera
             transform.localEulerAngles = headingAngles;
+
+
         }
 
         private void ConstrainAngles()
