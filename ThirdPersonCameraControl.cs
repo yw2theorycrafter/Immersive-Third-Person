@@ -147,6 +147,9 @@ namespace com.yw2theorycrafter.thirdpersonview
             if (!MainCameraControl.main.cinematicMode)
             {
                 UpdateViewModel();
+            } else {
+                viewModelTransform.localEulerAngles = Vector3.zero;
+                transform.localEulerAngles = Vector3.zero;
             }
         }
 
