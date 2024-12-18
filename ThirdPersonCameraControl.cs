@@ -79,6 +79,13 @@ namespace com.yw2theorycrafter.thirdpersonview
             pilotingAnything = Player.main.isPiloting;
             InsideTightSpace = Player.main.IsInBase() || Player.main.IsInSubmarine();
 
+            //XXX remove this, this is for debugging only:
+            if (!config.enabled)
+            {
+                enabled = false;
+                return;
+            }
+
             //Unfortunately, exiting from the PDA view causes a little animation glitch, but it's better than seeing the MainCameraControllerPatch for a split second
             bool shouldEnable = config.enabled && !UsingPDA && !pilotingAnything;
             if (config.switchToFirstPersonWhenInside)
@@ -134,9 +141,9 @@ namespace com.yw2theorycrafter.thirdpersonview
                 lookPosition = -1 * Vector3.forward * SmoothMoveToDistance(config.swimDistance);
             }
 
-            //When this is not called, the camera does not move at all.
             cameraTransform.localPosition = lookPosition;
             cameraTransform.localEulerAngles = Vector3.zero;
+
             if (!MainCameraControl.main.cinematicMode)
             {
                 UpdateViewModel();
@@ -222,14 +229,24 @@ namespace com.yw2theorycrafter.thirdpersonview
 
             var headingAngles = new Vector3(rotationX, rotationY);
             //TODO get rid of transform
+            /*
             transform.localEulerAngles = Vector3.zero;
             transform.localPosition = Vector3.down * skin;
+            */
+
+            //? does nothing?
+            /*
             viewModelTransform.localEulerAngles = Vector3.zero;
             viewModelTransform.localPosition = transform.localPosition;
+            */
 
             // Player transform needs only Y input, since view model, which is its child, is rotated on the X axis via animation
-            playerTransform.localEulerAngles = Vector3.up * headingAngles.y;
-            transform.localEulerAngles = Vector3.right * headingAngles.x;
+            // This is not smooth to change.
+            // playerTransform.localEulerAngles = Vector3.up * headingAngles.y;
+
+            viewModelTransform.localEulerAngles = Vector3.up * headingAngles.y;
+            //transform.localEulerAngles = Vector3.right * headingAngles.x;
+            transform.localEulerAngles = headingAngles;
         }
 
         private void ConstrainAngles()
