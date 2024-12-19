@@ -12,6 +12,7 @@ namespace com.yw2theorycrafter.thirdpersonview
         private Transform viewModelTransform;
 
         public PlayerBreathBubbles breathBubbles;
+        public MesmerizedScreenFX mesmerizedScreenFX;
 
         private float rotationX;
         private float rotationY;
@@ -87,8 +88,13 @@ namespace com.yw2theorycrafter.thirdpersonview
             {
                 shouldEnable = shouldEnable && !InsideTightSpace;
             }
+            if (mesmerizedScreenFX && mesmerizedScreenFX.enabled)
+            {
+                shouldEnable = false;
+            }
             enabled = shouldEnable;
             MainCameraControl.main.enabled = !enabled;
+
             if (breathBubbles)
             {
                 breathBubbles.enabled = !enabled;
@@ -119,9 +125,11 @@ namespace com.yw2theorycrafter.thirdpersonview
                 lookRotation = cameraTransform.rotation;
                 rotationX = 0;
                 rotationY = lookRotation.eulerAngles.y;
-            } else { 
-                if (!FPSInputModule.current.lockRotation)
+            } else {
+                if (FPSInputModule.current.lockRotation)
                 {
+                    Plugin.Logger.LogInfo("Locked rotation!");
+                } else {
                     ManualRotation();
                 }
                 ConstrainAngles();
@@ -139,7 +147,8 @@ namespace com.yw2theorycrafter.thirdpersonview
 
             if (Physics.BoxCast(castFrom, cameraHalfExtends, castDirection, out var hit, lookRotation, castDistance, obstructionMask, QueryTriggerInteraction.Ignore)) {
 #if DEBUG
-                Plugin.Logger.LogInfo($"Hit! {hit.collider} layer={hit.collider.gameObject.layer}");
+                //Quite noisy, useful for debugging the camera collision:
+                //Plugin.Logger.LogInfo($"Hit! {hit.collider} layer={hit.collider.gameObject.layer}");
 #endif
                 //Prevent clipping into the player's head
                 currentDistance = Mathf.Max(0.25f, hit.distance);
