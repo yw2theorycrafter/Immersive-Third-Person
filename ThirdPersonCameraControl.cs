@@ -8,7 +8,7 @@ namespace com.yw2theorycrafter.thirdpersonview
         public static ThirdPersonCameraControl main = null;
 
         private Transform focusTransform;
-        private Transform cameraTransform;
+        public Transform cameraTransform;
         private Transform viewModelTransform;
 
         public PlayerBreathBubbles breathBubbles;
@@ -16,7 +16,7 @@ namespace com.yw2theorycrafter.thirdpersonview
 
         private float rotationX;
         private float rotationY;
-        private float currentDistance;
+        public float currentDistance;
 
         public ThirdPersonViewConfig config;
 
