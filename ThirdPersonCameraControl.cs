@@ -21,7 +21,6 @@ namespace com.yw2theorycrafter.thirdpersonview
         public ThirdPersonViewConfig config;
 
         //Camera ignores player and all default collision masks
-        //layer 0 had some weird collisions on that layer, but leaving on for now 
         //Also layer 21 - TODO why?
         private int obstructionMask = (~(1 << 21)) & (~(1 << LayerID.Player)) & LayerID.DefaultCollisionMask;
         private Vector3 cameraHalfExtends;
@@ -126,10 +125,9 @@ namespace com.yw2theorycrafter.thirdpersonview
                 rotationX = 0;
                 rotationY = lookRotation.eulerAngles.y;
             } else {
-                if (FPSInputModule.current.lockRotation)
+                //Handles the start menu?
+                if (!FPSInputModule.current.lockRotation)
                 {
-                    Plugin.Logger.LogInfo("Locked rotation!");
-                } else {
                     ManualRotation();
                 }
                 ConstrainAngles();
@@ -187,6 +185,7 @@ namespace com.yw2theorycrafter.thirdpersonview
 
             //This rotates the player
             viewModelTransform.localEulerAngles = Vector3.up * headingAngles.y;
+            Player.main.transform.localEulerAngles = Vector3.zero;
             //This rotates the camera
             transform.localEulerAngles = headingAngles;
         }
