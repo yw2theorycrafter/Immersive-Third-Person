@@ -31,7 +31,7 @@ namespace com.yw2theorycrafter.thirdpersonview
 
         private bool pilotingAnything;
 
-        private bool InsideTightSpace = false;
+        private bool inBaseOrCyclops = false;
 
         private void OnEnable() {
             if (!main)
@@ -58,7 +58,7 @@ namespace com.yw2theorycrafter.thirdpersonview
             cameraTransform = mainCameraControl.cameraOffsetTransform;
             viewModelTransform = mainCameraControl.viewModel;
 
-            config = new ThirdPersonViewConfig();
+            config = Plugin.config;
 
             //Defines the camera collision box to avoid clipping.
             //Values > 0.1f seem to break the collision, values < 0.1f place the camera too close to the wall causing frustrum clipping
@@ -74,7 +74,7 @@ namespace com.yw2theorycrafter.thirdpersonview
             UsingPDA = Player.main.GetPDA().isInUse;
             //TODO support for being 3rd person while piloting
             pilotingAnything = Player.main.isPiloting;
-            InsideTightSpace = Player.main.IsInBase() || Player.main.IsInSubmarine();
+            inBaseOrCyclops = Player.main.IsInBase() || Player.main.IsInSubmarine();
 
             //XXX remove this, this is for debugging only:
             if (!config.enabled)
@@ -85,9 +85,9 @@ namespace com.yw2theorycrafter.thirdpersonview
 
             //Unfortunately, exiting from the PDA view causes a little animation glitch, but it's better than seeing the MainCameraControllerPatch for a split second
             bool shouldEnable = config.enabled && !UsingPDA && !pilotingAnything;
-            if (config.switchToFirstPersonWhenInside)
+            if (inBaseOrCyclops)
             {
-                shouldEnable = shouldEnable && !InsideTightSpace;
+                shouldEnable = false;
             }
             if (mesmerizedScreenFX && mesmerizedScreenFX.enabled)
             {
@@ -178,7 +178,7 @@ namespace com.yw2theorycrafter.thirdpersonview
         }
 
         private float SmoothMoveToDistance(float newDistance) {
-            currentDistance = Mathf.MoveTowards(currentDistance, newDistance, Time.deltaTime * config.cameraDistanceDelta);
+            currentDistance = Mathf.MoveTowards(currentDistance, newDistance, Time.deltaTime * config.swimDistance);
             return currentDistance;
         }
 
