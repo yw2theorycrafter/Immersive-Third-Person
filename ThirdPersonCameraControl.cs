@@ -13,6 +13,8 @@ namespace com.yw2theorycrafter.thirdpersonview
 
         public PlayerBreathBubbles breathBubbles;
         public MesmerizedScreenFX mesmerizedScreenFX;
+        public RocketConstructor rocketConstructor;
+        public LaunchRocket launchRocket;
 
         private float rotationX;
         private float rotationY;
@@ -88,6 +90,14 @@ namespace com.yw2theorycrafter.thirdpersonview
                 shouldEnable = shouldEnable && !InsideTightSpace;
             }
             if (mesmerizedScreenFX && mesmerizedScreenFX.enabled)
+            {
+                shouldEnable = false;
+            }
+            if (rocketConstructor && (rocketConstructor.transform.position + new Vector3(0, 1.6f, 0) - Player.main.transform.position).magnitude < 2)
+            {
+                shouldEnable = false;
+            }
+            if (launchRocket && launchRocket.endSequenceGo.activeSelf)
             {
                 shouldEnable = false;
             }
