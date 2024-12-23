@@ -2,7 +2,7 @@
 using HarmonyLib;
 using UnityEngine;
 
-namespace com.yw2theorycrafter.thirdpersonview {
+namespace com.yw2theorycrafter.immersivethirdperson {
     [HarmonyPatch(typeof(Builder), nameof(Builder.GetAimTransform))]
     class Builder_GetAimTransformPatch{
         [HarmonyPrefix]

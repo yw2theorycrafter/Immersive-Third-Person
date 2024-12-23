@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine;
 
-namespace com.yw2theorycrafter.thirdpersonview {
+namespace com.yw2theorycrafter.immersivethirdperson {
     [HarmonyPatch]
     class Utils_TraceFPSTargetPositionPatch {
         [HarmonyTranspiler]

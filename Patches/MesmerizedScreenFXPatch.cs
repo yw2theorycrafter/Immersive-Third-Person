@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
 
-namespace com.yw2theorycrafter.thirdpersonview {
+namespace com.yw2theorycrafter.immersivethirdperson {
     [HarmonyPatch(typeof(MesmerizedScreenFX), nameof(MesmerizedScreenFX.Start))]
     class MesmerizedScreenFX_StartPatch{
         [HarmonyPostfix]

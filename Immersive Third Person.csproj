@@ -3,12 +3,12 @@
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <_Comment>Duplicates values in Plugin.cs</_Comment>
-    <AssemblyName>Third Person View</AssemblyName>
-    <Version>2.0.0</Version>
+    <AssemblyName>Immersive Third Person</AssemblyName>
+    <Version>1.0.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>11</LangVersion>
-    <RootNamespace>com.yw2theorycrafter.thirdpersonview</RootNamespace>
-    <BepInExPluginGuid>com.yw2theorycrafter.thirdpersonview</BepInExPluginGuid>
+    <RootNamespace>com.yw2theorycrafter.immersivethirdperson</RootNamespace>
+    <BepInExPluginGuid>com.yw2theorycrafter.immersivethirdperson</BepInExPluginGuid>
     
     <RestoreAdditionalProjectSources>
       https://api.nuget.org/v3/index.json;

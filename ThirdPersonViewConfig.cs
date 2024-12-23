@@ -8,7 +8,7 @@ using Nautilus.Options.Attributes;
 using System;
 using UnityEngine;
 
-namespace com.yw2theorycrafter.thirdpersonview
+namespace com.yw2theorycrafter.immersivethirdperson
 {
     [Menu("Immersive Third Person")]
     public class ThirdPersonViewConfig : ConfigFile {

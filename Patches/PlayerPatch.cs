@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
 
-namespace com.yw2theorycrafter.thirdpersonview {
+namespace com.yw2theorycrafter.immersivethirdperson {
     [HarmonyPatch(typeof(Player), nameof(Player.SetScubaMaskActive))]
     class Player_SetScubaMaskActivePatch {
         [HarmonyPrefix]

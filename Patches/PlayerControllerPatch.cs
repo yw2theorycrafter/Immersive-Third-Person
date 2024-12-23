@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
 
-namespace com.yw2theorycrafter.thirdpersonview {
+namespace com.yw2theorycrafter.immersivethirdperson {
     [HarmonyPatch(typeof(Player), nameof(Player.SetHeadVisible))]
     class PlayerController_SetHeadVisiblePatch {
         public static bool Prefix(Player __instance)

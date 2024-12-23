@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace com.yw2theorycrafter.thirdpersonview
+namespace com.yw2theorycrafter.immersivethirdperson
 {
     class ThirdPersonCameraControl : MonoBehaviour {
 

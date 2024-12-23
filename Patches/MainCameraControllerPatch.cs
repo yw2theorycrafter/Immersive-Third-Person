@@ -1,7 +1,7 @@
-﻿using com.yw2theorycrafter.thirdpersonview;
+﻿using com.yw2theorycrafter.immersivethirdperson;
 using HarmonyLib;
 
-namespace com.yw2theorycrafter.thirdpersonview {
+namespace com.yw2theorycrafter.immersivethirdperson {
     [HarmonyPatch(typeof(MainCameraControl), nameof(MainCameraControl.Awake))]
     class MainCameraControl_AwakePatch {
         [HarmonyPostfix]

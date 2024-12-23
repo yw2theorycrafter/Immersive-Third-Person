@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
 
-namespace com.yw2theorycrafter.thirdpersonview {
+namespace com.yw2theorycrafter.immersivethirdperson {
     [HarmonyPatch(typeof(PlayerBreathBubbles), nameof(PlayerBreathBubbles.Start))]
     class PlayerBreathBubbles_StartPatch{
         [HarmonyPostfix]

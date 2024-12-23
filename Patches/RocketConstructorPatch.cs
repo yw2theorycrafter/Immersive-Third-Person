@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
 
-namespace com.yw2theorycrafter.thirdpersonview {
+namespace com.yw2theorycrafter.immersivethirdperson {
     [HarmonyPatch(typeof(RocketConstructor), nameof(RocketConstructor.Update))]
     class RocketConstructor_UpdatePatch{
         [HarmonyPostfix]
